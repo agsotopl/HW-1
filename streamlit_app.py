@@ -3,6 +3,15 @@ from openai import OpenAI
 import PyPDF2
 
 
+def read_pdf(uploaded_file):
+    """Extract text from a PDF file."""
+    pdf_reader = PyPDF2.PdfReader(uploaded_file)
+    document = ""
+    for page in pdf_reader.pages:
+        document += page.extract_text()
+    return document
+
+
 # Show title and description.
 st.title("MY Document question answering")
 st.write(
@@ -45,15 +54,14 @@ else:
     if uploaded_file and question:
 
         # Process the uploaded file and question.
-        if uploaded_file.type == "application/pdf":
-            # Extract text from PDF
-            pdf_reader = PyPDF2.PdfReader(uploaded_file)
-            document = ""
-            for page in pdf_reader.pages:
-                document += page.extract_text()
-        else:
-            # Handle text files
+        file_extension = uploaded_file.name.split('.')[-1]
+        if file_extension == 'txt':
             document = uploaded_file.read().decode()
+        elif file_extension == 'pdf':
+            document = read_pdf(uploaded_file)
+        else:
+            st.error("Unsupported file type.")
+            st.stop()
         
         messages = [
             {
